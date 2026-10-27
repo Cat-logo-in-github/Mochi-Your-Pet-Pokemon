@@ -1,8 +1,9 @@
 import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import { validateSpriteSourceReceipt } from '../scripts/package-project.mjs';
 import { describe, expect, it } from 'vitest';
 import { unzipSync } from 'fflate';
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import {
   assertSafeEntries,
@@ -68,6 +69,64 @@ describe('release validation', () => {
     source['SOURCE.json'] = bytes(JSON.stringify(receipt));
     expect(() => validateSpriteSourceReceipt(source)).toThrow('URL is not pinned');
   });
+
+  it('preserves every pinned sprite source byte through Windows Git add and Linux checkout', async () => {
+    const workRoot = path.resolve(repositoryRoot, 'work');
+    await mkdir(workRoot, { recursive: true });
+    const fixtureRoot = await mkdtemp(path.join(workRoot, 'git-artwork-checkout-'));
+    const resolved = path.resolve(fixtureRoot);
+    if (!resolved.startsWith(workRoot + path.sep)) throw new Error('Unsafe Git fixture path.');
+    const sourcePrefix = 'packages/pet-assets/source/';
+    const source = await readTree(path.join(repositoryRoot, sourcePrefix));
+    const attributes = await readFile(path.join(repositoryRoot, '.gitattributes'));
+    const git = (...args: string[]) =>
+      execFileSync('git', ['-C', fixtureRoot, ...args], { stdio: ['ignore', 'pipe', 'pipe'] });
+    const write = async (name: string, data: Uint8Array) => {
+      const target = path.join(fixtureRoot, name);
+      await mkdir(path.dirname(target), { recursive: true });
+      await writeFile(target, data);
+    };
+    try {
+      git('init', '--quiet', '--template=');
+      git('config', '--local', 'core.autocrlf', 'true');
+      git('config', '--local', 'core.safecrlf', 'false');
+      for (const [name, data] of Object.entries(source)) await write(sourcePrefix + name, data);
+      const licensePath = sourcePrefix + 'LICENSE-SpriteCollab.md';
+      // Reproduce the reported failure before adding byte-preservation rules.
+      git('add', '--', licensePath);
+      const normalized = git('show', ':' + licensePath);
+      expect(normalized.equals(Buffer.from(source['LICENSE-SpriteCollab.md']))).toBe(false);
+      const altered = { ...source, 'LICENSE-SpriteCollab.md': new Uint8Array(normalized) };
+      expect(() => validateSpriteSourceReceipt(altered)).toThrow('hash/size mismatch');
+      await write('.gitattributes', attributes);
+      const runtimeLicensePath = 'packages/pet-assets/public/mochi/LICENSE-SpriteCollab.md';
+      await write(runtimeLicensePath, source['LICENSE-SpriteCollab.md']);
+      git('add', '--all');
+      // Existing repositories must restage files after changing their attributes.
+      git('add', '--renormalize', '--', sourcePrefix);
+      const checkoutRoot = path.join(fixtureRoot, 'linux-checkout');
+      await mkdir(checkoutRoot);
+      const checkoutPrefix = checkoutRoot.replaceAll('\\', '/') + '/';
+      git(
+        '-c',
+        'core.autocrlf=false',
+        'checkout-index',
+        '--all',
+        '--force',
+        '--prefix=' + checkoutPrefix,
+      );
+      const checked = await readTree(path.join(checkoutRoot, sourcePrefix));
+      expect(validateSpriteSourceReceipt(checked).files).toBeGreaterThan(700);
+      for (const [name, data] of Object.entries(source))
+        expect(Buffer.from(checked[name]).equals(Buffer.from(data)), name).toBe(true);
+      expect(await readFile(path.join(checkoutRoot, runtimeLicensePath))).toEqual(
+        Buffer.from(source['LICENSE-SpriteCollab.md']),
+      );
+      expect(sourceIncludes('.gitattributes', false)).toBe(true);
+    } finally {
+      await rm(resolved, { recursive: true, force: true });
+    }
+  }, 30_000);
 
   it('validates static website assets without duplicated project archives', () => {
     const website: Record<string, Uint8Array> = {

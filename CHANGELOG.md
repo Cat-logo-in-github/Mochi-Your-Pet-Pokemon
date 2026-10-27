@@ -2,6 +2,8 @@
 
 ## 1.3.0 - 2026-10-27
 
+- Fixed GitHub packaging after Windows line-ending normalization: preserve pinned artwork bytes with required .gitattributes, retain strict checksums, and cover the actual Git add/checkout path.
+
 - Durable Gmail alerts with visible filter/check results, cursor baselines, later Inbox-label handling and pet inbox recovery when system notifications fail.
 - Calendar reminders expose a rolling 30-day schedule, default 9 AM all-day alerts and clear next-check/scheduled counts.
 - Standalone Windows Google connections use a personal Desktop OAuth client, system-browser PKCE consent and an encrypted per-user credential/cache store.

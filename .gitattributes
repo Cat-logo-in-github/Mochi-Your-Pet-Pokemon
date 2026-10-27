@@ -1,0 +1,6 @@
+# Keep ordinary source consistent across Windows and Linux.
+* text=auto eol=lf
+
+# Upstream receipts and shared runtime provenance require exact original bytes.
+/packages/pet-assets/source/** -text
+/packages/pet-assets/public/mochi/** -text

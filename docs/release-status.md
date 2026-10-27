@@ -1,6 +1,8 @@
 # Mochi 1.3 verification
 
-Prepared 27 October 2026. The integrated JavaScript suite passes **342 tests across 16 files**; TypeScript, ESLint and formatting pass. Production browser and website builds pass. The strict native executable is **1.3.0.0**, with **148 native checks passed and zero failed**, including the new standalone Google engine and persistent reminder integration.
+GitHub checkout correction: reproduced the reported LICENSE-SpriteCollab.md mismatch by staging the real upstream CRLF file with Windows autocrlf, then checking it out with Linux settings. Required .gitattributes now disables text conversion for pinned source and runtime artwork. A regression stages/restages and checks out every source input, verifies every original byte and all 743 receipt hashes, and checks the runtime license. The strict original receipt validator is unchanged. Existing repositories need the one-time restaging instructions in START-HERE.md after restoring files from this ZIP.
+
+Prepared 27 October 2026. The integrated JavaScript suite passes **343 tests across 16 files**; TypeScript, ESLint and formatting pass. Production browser and website builds pass. The strict native executable is **1.3.0.0**, with **148 native checks passed and zero failed**, including the new standalone Google engine and persistent reminder integration.
 
 The extension now defaults to All new inbox mail, offers explicit Important/Senders filters, checks approximately every minute and saves readable mail cards before OS notification attempts and Gmail cursor updates. Deferred cards survive pause/quiet hours/mute and restart. Calendar keeps a rolling 30-day selected-calendar schedule, including configurable all-day reminders enabled at 9 AM. The pet's Settings action opens full extension options. Existing deliberately selected mail filters remain selected; legacy defaults are highlighted for review.
 

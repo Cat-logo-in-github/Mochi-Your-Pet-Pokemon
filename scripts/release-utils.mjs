@@ -126,6 +126,7 @@ export async function assertFile(directory, filename) {
 export const REQUIRED_SOURCE_FILES = [
   'README.md',
   'START-HERE.md',
+  '.gitattributes',
   'LICENSE',
   'package.json',
   'package-lock.json',
@@ -145,6 +146,7 @@ const allowedFiles = new Set([
   'CONTRIBUTING.md',
   'CHANGELOG.md',
   '.gitignore',
+  '.gitattributes',
   '.env.example',
   '.npmrc',
   '.prettierignore',

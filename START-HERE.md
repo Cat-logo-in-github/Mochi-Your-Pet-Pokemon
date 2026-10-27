@@ -36,6 +36,19 @@ Enable Actions if GitHub asks. Default-branch pushes build/check Windows and bro
 
 A version tag can be reused only for the same source commit. A later commit with the same package version receives a distinct vVERSION-build.RUN_NUMBER release instead of replacing another commit’s binaries.
 
+## Updating a repository after the initial artwork checksum failure
+
+Overwrite the old project files with this complete ZIP, including **.gitattributes** and **packages/pet-assets**. Keep your repository's existing .git folder. The new attributes preserve the exact upstream license, timing and credits bytes; the original SHA-256 checks remain strict.
+
+If you use a local Git checkout (including GitHub Desktop), restage the restored bytes once before committing and pushing:
+
+```sh
+git add --renormalize .
+git add .gitattributes
+```
+
+Then commit and push normally. Re-running the old failed commit cannot pick up this correction. If uploading directly on GitHub's website, upload the replacement files and .gitattributes together as a new commit. Fresh repositories only need the ordinary first commit.
+
 ## Publish the website once
 
 A repository owner must choose **Settings → Pages → Source → GitHub Actions** once for a new Pages site. GitHub’s built-in workflow token cannot perform first activation. Then run Deploy demo to GitHub Pages or push a default-branch change.
