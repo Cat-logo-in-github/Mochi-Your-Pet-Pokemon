@@ -1,0 +1,6 @@
+{
+  "name": "@mochi/pet-assets",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Credited Eevee-family pixel sprite sources, exact timings and shared animation atlases"
+}

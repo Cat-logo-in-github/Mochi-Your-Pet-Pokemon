@@ -1,0 +1,107 @@
+name: Deploy demo to GitHub Pages
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'apps/**'
+      - 'packages/**'
+      - 'scripts/**'
+      - 'docs/**'
+      - '*-HERE.md'
+      - 'README.md'
+      - 'package*.json'
+      - '.github/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    if: github.event_name == 'workflow_dispatch' || github.ref_name == github.event.repository.default_branch
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build the actual Windows download and run native checks
+        shell: powershell
+        run: ./scripts/build-windows.ps1
+      - uses: actions/upload-artifact@v7
+        with:
+          name: mochi-pages-windows
+          path: dist/mochi-windows-companion.zip
+          if-no-files-found: error
+  build:
+    needs: windows
+    permissions:
+      contents: read
+      actions: read
+      pages: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    outputs:
+      pages-ready: ${{ steps.pages.outcome == 'success' }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: actions/download-artifact@v8
+        with:
+          name: mochi-pages-windows
+          path: dist
+      - run: npm ci --workspaces=false
+      - name: Read existing GitHub Pages configuration
+        id: pages
+        continue-on-error: true
+        uses: actions/configure-pages@v6
+        with:
+          enablement: false
+      - name: Explain one-time owner Pages activation when needed
+        if: steps.pages.outcome != 'success'
+        env:
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          echo "::warning::Downloads will still be built. A repository owner must select GitHub Actions once in Settings > Pages before this site can deploy."
+          echo "## Downloads built; Pages awaits owner activation" >> "$GITHUB_STEP_SUMMARY"
+          echo "Open https://github.com/$REPOSITORY/settings/pages and choose **GitHub Actions** as the source, then rerun this workflow. The built-in workflow token cannot create a new Pages site." >> "$GITHUB_STEP_SUMMARY"
+      - run: npm run validate:assets
+      - run: npm run typecheck
+      - run: npm test
+      - name: Build extension and static website
+        run: npm run build
+        env:
+          MOCHI_BASE_PATH: ${{ steps.pages.outcome == 'success' && format('{0}/', steps.pages.outputs.base_path) || './' }}
+          MOCHI_REPOSITORY: ${{ github.repository }}
+      - run: npm run package
+      - run: npm run verify:release
+      - name: Keep the built website and runnable downloads available regardless of Pages setup
+        uses: actions/upload-artifact@v7
+        with:
+          name: mochi-website-with-runnable-downloads
+          path: apps/web/dist
+          if-no-files-found: error
+          retention-days: 14
+      - uses: actions/upload-pages-artifact@v5
+        if: steps.pages.outcome == 'success'
+        with:
+          path: apps/web/dist
+  deploy:
+    needs: build
+    if: needs.build.outputs.pages-ready == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publish static demo with its runnable Windows download
+        id: deployment
+        uses: actions/deploy-pages@v5

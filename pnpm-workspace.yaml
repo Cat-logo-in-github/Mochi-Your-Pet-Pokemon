@@ -1,0 +1,6 @@
+packages:
+  - apps/extension
+  - apps/web
+  - packages/*
+# npm workspaces and package-lock.json are canonical for this release.
+# pnpm may run the root scripts after npm installation; do not regenerate a second lockfile.

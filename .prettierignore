@@ -1,0 +1,15 @@
+node_modules
+**/dist
+**/public/downloads
+pnpm-lock.yaml
+work
+**/src-tauri/target
+**/Cargo.lock
+
+# Preserve original upstream bytes/receipts and generated sprite metadata.
+packages/pet-assets/source/**
+packages/pet-assets/public/mochi/**
+apps/web/public/mochi/**
+
+Run-Windows/**
+Browser-Extension/**

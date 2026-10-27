@@ -1,0 +1,38 @@
+name: Verify Mochi
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --workspaces=false
+      - run: npm run validate:assets
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run lint
+      - run: npm run build
+      - run: npm run validate:manifest
+      - run: npm run package
+      - run: npm run verify:release
+      - uses: actions/upload-artifact@v7
+        with:
+          name: mochi-project-and-browser-builds
+          path: |
+            dist/mochi-project.zip
+            dist/mochi-chrome-extension.zip
+            dist/mochi-website.zip
+            dist/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 14

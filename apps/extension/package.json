@@ -1,0 +1,12 @@
+{
+  "name": "@mochi/extension",
+  "version": "1.3.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "@mochi/shared": "*"
+  }
+}

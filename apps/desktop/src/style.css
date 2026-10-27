@@ -1,0 +1,104 @@
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: transparent !important;
+  overflow: hidden;
+}
+.desktop-shell {
+  width: 300px;
+  margin: 8px auto;
+  color: #493d51;
+  font:
+    13px/1.4 system-ui,
+    sans-serif;
+  text-align: center;
+}
+.desktop-badge {
+  width: fit-content;
+  margin: 0 auto 5px;
+  padding: 4px 9px;
+  border-radius: 20px;
+  background: #f8f2e5;
+  color: #66552e;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.desktop-drag {
+  border: 0;
+  background: #f8f5fc;
+  font-size: 11px;
+  padding: 5px 12px;
+  border-radius: 12px;
+  cursor: grab;
+  touch-action: none;
+}
+.desktop-pet {
+  display: block;
+  width: 165px;
+  height: 140px;
+  margin: 5px auto 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+.desktop-controls {
+  padding: 12px;
+  border: 1px solid #e0d8e8;
+  border-radius: 18px;
+  background: #fffaf5;
+  box-shadow: 0 6px 20px #493d5112;
+  text-align: left;
+}
+.desktop-row {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  justify-content: space-between;
+}
+.desktop-row label {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 0;
+}
+.desktop-row button,
+.desktop-row select {
+  font-size: 11px;
+  padding: 6px 9px;
+  border-radius: 10px;
+}
+.desktop-check {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 11px 0;
+  font-size: 12px;
+}
+.desktop-check input {
+  width: auto;
+  margin: 0;
+}
+.desktop-help,
+.desktop-message {
+  margin: 9px 0 0;
+  color: #6c6071;
+  font-size: 10px;
+  line-height: 1.4;
+}
+.desktop-message {
+  min-height: 28px;
+  color: #655178;
+}
+@media (prefers-reduced-motion: reduce) {
+  .desktop-shell *,
+  .desktop-shell *::before,
+  .desktop-shell *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
